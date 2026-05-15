@@ -5,560 +5,339 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Wizard Punkteblock</title>
 
+<!-- Icon-Verknüpfung (deine hochgeladene Datei) -->
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+
+<!-- Farbe für die Statusleiste/Ladebildschirm -->
+<meta name="theme-color" content="#18122B">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <style>
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-    font-family:Arial, sans-serif;
-}
+    *{ box-sizing:border-box; margin:0; padding:0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    
+    body{ 
+        background: linear-gradient(180deg,#18122B,#251B37); 
+        color:white; 
+        min-height:100vh; 
+        padding: 10px 10px 80px 10px; /* Platz für Menü unten */
+    }
 
-body{
-    background:linear-gradient(180deg,#18122B,#251B37);
-    color:white;
-    min-height:100vh;
-    padding:16px;
-}
+    .container{ max-width:600px; margin:auto; }
+    h1{ text-align:center; margin-bottom:15px; font-size:1.8rem; color: #A855F7; }
 
-.container{
-    max-width:900px;
-    margin:auto;
-}
+    .card{ 
+        background:rgba(255,255,255,0.08); 
+        border:1px solid rgba(255,255,255,0.1); 
+        border-radius:18px; 
+        padding:15px; 
+        margin-bottom:15px; 
+        backdrop-filter: blur(10px); 
+    }
 
-h1{
-    text-align:center;
-    margin-bottom:18px;
-    font-size:2rem;
-}
+    /* Tabs / Navigation */
+    .nav-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: #3B1E54;
+        display: flex;
+        justify-content: space-around;
+        padding: 10px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        z-index: 100;
+    }
 
-.card{
-    background:rgba(255,255,255,0.08);
-    border:1px solid rgba(255,255,255,0.1);
-    border-radius:18px;
-    padding:16px;
-    margin-bottom:16px;
-    backdrop-filter: blur(10px);
-}
+    .nav-item {
+        color: rgba(255,255,255,0.6);
+        text-decoration: none;
+        font-size: 0.8rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+    }
 
-.setup{
-    display:flex;
-    flex-direction:column;
-    gap:12px;
-}
+    .nav-item.active { color: #A855F7; font-weight: bold; }
 
-input, button{
-    border:none;
-    border-radius:12px;
-    padding:12px;
-    font-size:1rem;
-}
+    .setup input, .setup button, .playerRow input {
+        border:none; border-radius:12px; padding:12px; font-size:1rem; 
+    }
 
-input{
-    background:#fff;
-    color:#111;
-    width:100%;
-}
+    input { background:#fff; color:#111; width: 100%; }
 
-button{
-    background:#A855F7;
-    color:white;
-    font-weight:bold;
-    cursor:pointer;
-    transition:0.2s;
-}
+    button { 
+        background:#A855F7; color:white; font-weight:bold; cursor:pointer; 
+        transition:0.2s; border: none;
+    }
+    button:active { transform:scale(0.95); }
 
-button:hover{
-    transform:scale(1.02);
-    background:#9333EA;
-}
+    .playerRow { 
+        display:grid; grid-template-columns:1fr 70px 70px; gap:8px; 
+        align-items:center; margin-bottom: 10px;
+    }
 
-.players{
-    display:flex;
-    flex-direction:column;
-    gap:10px;
-    margin-top:10px;
-}
+    .playerName { font-weight:bold; font-size:0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.playerRow{
-    display:grid;
-    grid-template-columns:1fr 80px 80px;
-    gap:8px;
-    align-items:center;
-    margin-bottom:5px;
-}
+    table { width:100%; border-collapse:collapse; margin-top:10px; font-size: 0.9rem; }
+    th, td { border:1px solid rgba(255,255,255,0.1); padding:8px; text-align:center; }
+    th { background:#3B1E54; color: #A855F7; }
 
-.playerName{
-    font-weight:bold;
-    font-size:0.9rem;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
+    .winner-banner { 
+        margin-top:12px; padding:15px; background:#22C55E; 
+        border-radius:12px; text-align:center; font-weight:bold; 
+    }
 
-.scoreboard{
-    overflow-x:auto;
-}
+    .highscore-list { list-style: none; }
+    .highscore-item { 
+        display: flex; justify-content: space-between; 
+        padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px;
-}
-
-th, td{
-    border:1px solid rgba(255,255,255,0.1);
-    padding:10px;
-    text-align:center;
-}
-
-th{
-    background:#3B1E54;
-}
-
-.topbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:10px;
-    gap:10px;
-    flex-wrap:wrap;
-}
-
-.winner{
-    margin-top:12px;
-    padding:14px;
-    background:#22C55E;
-    border-radius:12px;
-    text-align:center;
-    font-weight:bold;
-}
-
-.reset-btn{
-    background:#ef4444;
-    margin-top:20px;
-    width:100%;
-}
+    .hidden { display: none; }
+    .reset-btn { background: #ef4444; width: 100%; margin-top: 20px; border-radius: 12px; padding: 10px; }
 </style>
 </head>
-
 <body>
 
 <div class="container">
-
     <h1>🧙 Wizard Block</h1>
 
-    <div class="card" id="setupCard">
-        <div class="setup">
-
-            <label>Spieleranzahl (3-6)</label>
-
-            <input
-                type="number"
-                id="playerCount"
-                min="3"
-                max="6"
-                value="4">
-
-            <button onclick="createPlayerInputs()">
-                Namen eingeben
-            </button>
-
-            <div id="playerInputs" class="players"></div>
-
+    <!-- SEITE 1: SPIEL -->
+    <div id="page-game">
+        <div class="card" id="setupCard">
+            <div class="setup">
+                <label>Spieleranzahl (3-6)</label>
+                <input type="number" id="playerCount" min="3" max="6" value="4">
+                <button onclick="createPlayerInputs()">Namen eingeben</button>
+                <div id="playerInputs" style="margin-top:15px; display:flex; flex-direction:column; gap:10px;"></div>
+            </div>
         </div>
-    </div>
 
-    <div id="gameArea" style="display:none;">
-
-        <div class="card">
-
-            <div class="topbar">
-
-                <div class="roundInfo" id="roundInfo"></div>
-
-                <button onclick="nextRound()">
-                    Runde speichern
-                </button>
-
+        <div id="gameArea" class="hidden">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <div id="roundInfo" style="font-weight:bold;"></div>
+                    <button onclick="nextRound()" style="padding:8px 15px;">Runde fertig</button>
+                </div>
+                <div id="roundInputs"></div>
             </div>
 
-            <div id="roundInputs"></div>
-
+            <div class="card" style="overflow-x:auto;">
+                <table id="scoreTable">
+                    <thead><tr id="tableHead"><th>Rd</th></tr></thead>
+                    <tbody id="tableBody"></tbody>
+                    <tfoot><tr id="totalRow" style="font-weight:bold; background:rgba(168, 85, 247, 0.2);"><td>Σ</td></tr></tfoot>
+                </table>
+                <div id="winnerBox"></div>
+                <button class="reset-btn" onclick="resetGame()">Spiel abbrechen</button>
+            </div>
         </div>
-
-        <div class="card scoreboard">
-
-            <h2>Punktestand</h2>
-
-            <table id="scoreTable">
-
-                <thead>
-                    <tr id="tableHead">
-                        <th>Rd</th>
-                    </tr>
-                </thead>
-
-                <tbody id="tableBody"></tbody>
-
-                <tfoot>
-                    <tr id="totalRow">
-                        <th>Σ</th>
-                    </tr>
-                </tfoot>
-
-            </table>
-
-            <div id="winnerBox"></div>
-
-            <button class="reset-btn" onclick="resetGame()">
-                Neues Spiel starten
-            </button>
-
-        </div>
-
     </div>
 
+    <!-- SEITE 2: LEADERBOARD -->
+    <div id="page-leaderboard" class="hidden">
+        <div class="card">
+            <h2>🏆 Ewige Bestenliste</h2>
+            <p style="font-size: 0.8rem; margin-bottom: 15px; opacity: 0.7;">Gewonnene Spiele pro Spieler</p>
+            <div id="leaderboardList" class="highscore-list"></div>
+            <button class="reset-btn" style="background:#444;" onclick="clearLeaderboard()">Statistik löschen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation unten -->
+<div class="nav-bar">
+    <div class="nav-item active" id="nav-game" onclick="showPage('game')">
+        <span>🎮</span><span>Spiel</span>
+    </div>
+    <div class="nav-item" id="nav-leaderboard" onclick="showPage('leaderboard')">
+        <span>🏆</span><span>Bestenliste</span>
+    </div>
 </div>
 
 <script>
-
 let players = [];
 let scores = {};
 let round = 1;
 let maxRounds = 0;
+let gameFinished = false;
 
-// Spiel laden
-window.onload = function(){
-
+// Daten laden beim Start
+window.onload = function() {
     const saved = localStorage.getItem('wizardGame');
-
-    if(saved){
-
+    if (saved) {
         const data = JSON.parse(saved);
-
         players = data.players;
         scores = data.scores;
         round = data.round;
         maxRounds = data.maxRounds;
-
-        document.getElementById("setupCard").style.display = "none";
-        document.getElementById("gameArea").style.display = "block";
-
+        gameFinished = data.gameFinished || false;
+        
+        document.getElementById("setupCard").classList.add("hidden");
+        document.getElementById("gameArea").classList.remove("hidden");
         rebuildUI();
     }
+    updateLeaderboardUI();
 };
 
-function saveGame(){
-
-    const data = {
-        players,
-        scores,
-        round,
-        maxRounds
-    };
-
-    localStorage.setItem(
-        'wizardGame',
-        JSON.stringify(data)
-    );
+function showPage(page) {
+    document.getElementById('page-game').classList.add('hidden');
+    document.getElementById('page-leaderboard').classList.add('hidden');
+    document.getElementById('nav-game').classList.remove('active');
+    document.getElementById('nav-leaderboard').classList.remove('active');
+    
+    document.getElementById('page-' + page).classList.remove('hidden');
+    document.getElementById('nav-' + page).classList.add('active');
+    if(page === 'leaderboard') updateLeaderboardUI();
 }
 
-function resetGame(){
+function saveGame() {
+    localStorage.setItem('wizardGame', JSON.stringify({ players, scores, round, maxRounds, gameFinished }));
+}
 
-    if(confirm("Sicher? Alle Punkte werden gelöscht!")){
-
+function resetGame() {
+    if(confirm("Sicher? Aktuelles Spiel wird gelöscht!")) {
         localStorage.removeItem('wizardGame');
-
         location.reload();
     }
 }
 
 function createPlayerInputs(){
-
-    const count =
-        document.getElementById("playerCount").value;
-
-    const container =
-        document.getElementById("playerInputs");
-
+    const count = document.getElementById("playerCount").value;
+    const container = document.getElementById("playerInputs");
     container.innerHTML = "";
-
-    for(let i=0;i<count;i++){
-
-        container.innerHTML += `
-            <input
-                type="text"
-                placeholder="Name Spieler ${i+1}"
-                id="player${i}">
-        `;
-    }
-
-    container.innerHTML += `
-        <button onclick="startGame(${count})">
-            Spiel starten
-        </button>
-    `;
+    for(let i=0;i<count;i++) container.innerHTML += `<input type="text" placeholder="Name Spieler ${i+1}" id="player${i}">`;
+    container.innerHTML += `<button onclick="startGame(${count})">Jetzt starten</button>`;
 }
 
 function startGame(count){
-
     players = [];
-    scores = {};
-
     for(let i=0;i<count;i++){
-
-        const name =
-            document.getElementById(`player${i}`)
-            .value
-            .trim();
-
-        if(!name){
-
-            alert("Namen fehlen!");
-
-            return;
-        }
-
+        const name = document.getElementById(`player${i}`).value.trim();
+        if(!name) return alert("Alle Namen eingeben!");
         players.push(name);
-
         scores[name] = [];
     }
-
     maxRounds = Math.floor(60 / count);
-
-    document.getElementById("setupCard").style.display = "none";
-    document.getElementById("gameArea").style.display = "block";
-
+    document.getElementById("setupCard").classList.add("hidden");
+    document.getElementById("gameArea").classList.remove("hidden");
     buildTableHeader();
-
     renderRoundInputs();
-
     saveGame();
 }
 
-function buildTableHeader(){
-
-    const head =
-        document.getElementById("tableHead");
-
-    const total =
-        document.getElementById("totalRow");
-
+function buildTableHeader() {
+    const head = document.getElementById("tableHead");
+    const total = document.getElementById("totalRow");
+    head.innerHTML = "<th>Rd</th>";
+    total.innerHTML = "<td>Σ</td>";
     players.forEach(p => {
-
-        head.innerHTML += `<th>${p}</th>`;
-
-        total.innerHTML += `
-            <th id="total-${p}">
-                0
-            </th>
-        `;
+        head.innerHTML += `<th>${p.substring(0,5)}</th>`;
+        total.innerHTML += `<td id="total-${p}">0</td>`;
     });
 }
 
 function renderRoundInputs(){
-
     if(round > maxRounds) return;
-
-    document.getElementById("roundInfo").innerText =
-        `Runde ${round} / ${maxRounds}`;
-
-    const container =
-        document.getElementById("roundInputs");
-
+    document.getElementById("roundInfo").innerText = `Runde ${round} / ${maxRounds}`;
+    const container = document.getElementById("roundInputs");
     container.innerHTML = "";
-
     players.forEach(p => {
-
         container.innerHTML += `
             <div class="playerRow">
-
-                <div class="playerName">
-                    ${p}
-                </div>
-
-                <input
-                    type="number"
-                    placeholder="Tipp"
-                    id="bid-${p}">
-
-                <input
-                    type="number"
-                    placeholder="Stiche"
-                    id="tricks-${p}">
-
-            </div>
-        `;
+                <div class="playerName">${p}</div>
+                <input type="number" placeholder="Tipp" id="bid-${p}" inputmode="numeric">
+                <input type="number" placeholder="Stiche" id="tricks-${p}" inputmode="numeric">
+            </div>`;
     });
 }
 
 function nextRound(){
-
-    let totalTricks = 0;
-
-    // Erst prüfen
-    for(let p of players){
-
-        const bid =
-            parseInt(
-                document.getElementById(`bid-${p}`).value
-            );
-
-        const tricks =
-            parseInt(
-                document.getElementById(`tricks-${p}`).value
-            );
-
-        if(isNaN(bid) || isNaN(tricks)){
-
-            alert("Bitte Werte eintragen!");
-
-            return;
-        }
-
-        // Keine negativen Werte
-        if(tricks < 0){
-
-            alert("Stiche können nicht negativ sein!");
-
-            return;
-        }
-
-        // Nicht mehr als Rundenzahl
-        if(tricks > round){
-
-            alert(
-                `${p} hat zu viele Stiche eingetragen!`
-            );
-
-            return;
-        }
-
-        totalTricks += tricks;
-    }
-
-    // WICHTIGE PRÜFUNG
-    if(totalTricks > round){
-
-        alert(
-            `Zu viele Stiche eingetragen!\n\n` +
-            `In Runde ${round} sind maximal ${round} Stiche möglich.\n` +
-            `Eingetragen wurden aber ${totalTricks}.`
-        );
-
-        return;
-    }
-
-    // Punkte berechnen
-    players.forEach(p => {
-
-        const bid =
-            parseInt(
-                document.getElementById(`bid-${p}`).value
-            );
-
-        const tricks =
-            parseInt(
-                document.getElementById(`tricks-${p}`).value
-            );
-
-        let pts =
-            (bid === tricks)
-            ? (20 + tricks * 10)
-            : (Math.abs(bid - tricks) * -10);
-
-        scores[p].push(pts);
-    });
-
-    round++;
-
-    saveGame();
-
-    rebuildUI();
+    if(gameFinished) return;
+    try {
+        players.forEach(p => {
+            const bid = parseInt(document.getElementById(`bid-${p}`).value);
+            const tricks = parseInt(document.getElementById(`tricks-${p}`).value);
+            if(isNaN(bid) || isNaN(tricks)) throw "missing";
+            let pts = (bid === tricks) ? (20 + tricks * 10) : (Math.abs(bid - tricks) * -10);
+            scores[p].push(pts);
+        });
+        round++;
+        saveGame();
+        rebuildUI();
+    } catch(e) { alert("Bitte alle Felder ausfüllen!"); }
 }
 
-function rebuildUI(){
-
-    // Header neu
-    document.getElementById("tableHead").innerHTML =
-        "<th>Rd</th>";
-
-    document.getElementById("totalRow").innerHTML =
-        "<th>Σ</th>";
-
+function rebuildUI() {
     buildTableHeader();
-
-    // Tabelle neu
-    const body =
-        document.getElementById("tableBody");
-
+    const body = document.getElementById("tableBody");
     body.innerHTML = "";
-
-    for(let r=0;r<scores[players[0]].length;r++){
-
+    for(let r=0; r < scores[players[0]].length; r++) {
         let row = `<tr><td>${r+1}</td>`;
-
         players.forEach(p => {
-
             let pnt = scores[p][r];
-
-            row += `
-                <td>
-                    ${pnt > 0 ? "+" : ""}
-                    ${pnt}
-                </td>
-            `;
+            row += `<td style="color:${pnt < 0 ? '#ef4444' : '#22C55E'}">${pnt > 0 ? "+" : ""}${pnt}</td>`;
         });
-
         body.innerHTML += row + "</tr>";
     }
-
-    // Summen
     players.forEach(p => {
-
-        const total =
-            scores[p]
-            .reduce((a,b)=>a+b,0);
-
-        document.getElementById(`total-${p}`)
-            .innerText = total;
+        const total = scores[p].reduce((a,b)=>a+b,0);
+        document.getElementById(`total-${p}`).innerText = total;
     });
-
-    if(round > maxRounds){
-
-        endGame();
-
-    }else{
-
-        renderRoundInputs();
-    }
+    if(round > maxRounds) endGame(); else renderRoundInputs();
 }
 
 function endGame(){
+    gameFinished = true;
+    saveGame();
+    document.getElementById("roundInfo").innerText = "🏁 Ende";
+    document.getElementById("roundInputs").innerHTML = "";
+    
+    let bestScore = -999;
+    let winner = "";
+    players.forEach(p => {
+        const total = scores[p].reduce((a,b)=>a+b,0);
+        if(total > bestScore) { bestScore = total; winner = p; }
+    });
 
-    document.getElementById("roundInfo").innerText =
-        "Spiel beendet!";
-
-    document.getElementById("roundInputs").innerHTML =
-        "";
-
-    let winner =
-        players.reduce((a,b)=>
-
-            scores[a].reduce((s,v)=>s+v,0) >
-
-            scores[b].reduce((s,v)=>s+v,0)
-
-            ? a : b
-        );
-
-    document.getElementById("winnerBox").innerHTML = `
-        <div class="winner">
-            🏆 ${winner} gewinnt!
-        </div>
-    `;
+    document.getElementById("winnerBox").innerHTML = `<div class="winner-banner">🏆 ${winner} gewinnt mit ${bestScore} Pkt!</div>`;
+    
+    // In Bestenliste speichern
+    let history = JSON.parse(localStorage.getItem('wizardLeaderboard') || '{}');
+    history[winner] = (history[winner] || 0) + 1;
+    localStorage.setItem('wizardLeaderboard', JSON.stringify(history));
+    updateLeaderboardUI();
 }
 
-</script>
+function updateLeaderboardUI() {
+    const list = document.getElementById("leaderboardList");
+    const history = JSON.parse(localStorage.getItem('wizardLeaderboard') || '{}');
+    list.innerHTML = "";
+    
+    const sorted = Object.entries(history).sort((a,b) => b[1] - a[1]);
+    
+    if(sorted.length === 0) {
+        list.innerHTML = "<p style='text-align:center; opacity:0.5;'>Noch keine Spiele beendet.</p>";
+        return;
+    }
 
+    sorted.forEach(([name, wins]) => {
+        list.innerHTML += `
+            <div class="highscore-item">
+                <span>${name}</span>
+                <span style="color:#A855F7; font-weight:bold;">${wins} Siege</span>
+            </div>`;
+    });
+}
+
+function clearLeaderboard() {
+    if(confirm("Alle Statistiken löschen?")) {
+        localStorage.removeItem('wizardLeaderboard');
+        updateLeaderboardUI();
+    }
+}
+</script>
 </body>
 </html>
