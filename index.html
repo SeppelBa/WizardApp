@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wizard Punkteblock</title>
+
+<style>
+    /* ... Dein bestehendes CSS bleibt gleich ... */
+    *{ box-sizing:border-box; margin:0; padding:0; font-family:Arial, sans-serif; }
+    body{ background:linear-gradient(180deg,#18122B,#251B37); color:white; min-height:100vh; padding:16px; }
+    .container{ max-width:900px; margin:auto; }
+    h1{ text-align:center; margin-bottom:18px; font-size:2rem; }
+    .card{ background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.1); border-radius:18px; padding:16px; margin-bottom:16px; backdrop-filter: blur(10px); }
+    .setup{ display:flex; flex-direction:column; gap:12px; }
+    input, button{ border:none; border-radius:12px; padding:12px; font-size:1rem; }
+    input{ background:#fff; color:#111; width: 100%; }
+    button{ background:#A855F7; color:white; font-weight:bold; cursor:pointer; transition:0.2s; }
+    button:hover{ transform:scale(1.02); background:#9333EA; }
+    .players{ display:flex; flex-direction:column; gap:10px; margin-top:10px; }
+    .playerRow{ display:grid; grid-template-columns:1fr 80px 80px; gap:8px; align-items:center; margin-bottom: 5px;}
+    .playerName{ font-weight:bold; font-size:0.9rem; overflow: hidden; text-overflow: ellipsis; }
+    .scoreboard{ overflow-x:auto; }
+    table{ width:100%; border-collapse:collapse; margin-top:10px; }
+    th, td{ border:1px solid rgba(255,255,255,0.1); padding:10px; text-align:center; }
+    th{ background:#3B1E54; }
+    .topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px; flex-wrap:wrap; }
+    .winner{ margin-top:12px; padding:14px; background:#22C55E; border-radius:12px; text-align:center; font-weight:bold; }
+    .reset-btn { background: #ef4444; margin-top: 20px; width: 100%; }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🧙 Wizard Block</h1>
+
+    <div class="card" id="setupCard">
+        <div class="setup">
+            <label>Spieleranzahl (3-6)</label>
+            <input type="number" id="playerCount" min="3" max="6" value="4">
+            <button onclick="createPlayerInputs()">Namen eingeben</button>
+            <div id="playerInputs" class="players"></div>
+        </div>
+    </div>
+
+    <div id="gameArea" style="display:none;">
+        <div class="card">
+            <div class="topbar">
+                <div class="roundInfo" id="roundInfo"></div>
+                <button onclick="nextRound()">Runde speichern</button>
+            </div>
+            <div id="roundInputs"></div>
+        </div>
+
+        <div class="card scoreboard">
+            <h2>Punktestand</h2>
+            <table id="scoreTable">
+                <thead><tr id="tableHead"><th>Rd</th></tr></thead>
+                <tbody id="tableBody"></tbody>
+                <tfoot><tr id="totalRow"><th>Σ</th></tr></tfoot>
+            </table>
+            <div id="winnerBox"></div>
+            <button class="reset-btn" onclick="resetGame()">Neues Spiel starten</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let players = [];
+let scores = {};
+let round = 1;
+let maxRounds = 0;
+
+// PRÜFEN: Gibt es ein gespeichertes Spiel?
+window.onload = function() {
+    const saved = localStorage.getItem('wizardGame');
+    if (saved) {
+        const data = JSON.parse(saved);
+        players = data.players;
+        scores = data.scores;
+        round = data.round;
+        maxRounds = data.maxRounds;
+        
+        document.getElementById("setupCard").style.display = "none";
+        document.getElementById("gameArea").style.display = "block";
+        
+        rebuildUI();
+    }
+};
+
+function saveGame() {
+    const data = { players, scores, round, maxRounds };
+    localStorage.setItem('wizardGame', JSON.stringify(data));
+}
+
+function resetGame() {
+    if(confirm("Sicher? Alle Punkte werden gelöscht!")) {
+        localStorage.removeItem('wizardGame');
+        location.reload();
+    }
+}
+
+function createPlayerInputs(){
+    const count = document.getElementById("playerCount").value;
+    const container = document.getElementById("playerInputs");
+    container.innerHTML = "";
+    for(let i=0;i<count;i++){
+        container.innerHTML += `<input type="text" placeholder="Name Spieler ${i+1}" id="player${i}">`;
+    }
+    container.innerHTML += `<button onclick="startGame(${count})">Spiel starten</button>`;
+}
+
+function startGame(count){
+    players = [];
+    for(let i=0;i<count;i++){
+        const name = document.getElementById(`player${i}`).value.trim();
+        if(!name) return alert("Namen fehlen!");
+        players.push(name);
+        scores[name] = [];
+    }
+    maxRounds = Math.floor(60 / count);
+    document.getElementById("setupCard").style.display = "none";
+    document.getElementById("gameArea").style.display = "block";
+    
+    buildTableHeader();
+    renderRoundInputs();
+    saveGame();
+}
+
+function buildTableHeader() {
+    const head = document.getElementById("tableHead");
+    const total = document.getElementById("totalRow");
+    players.forEach(p => {
+        head.innerHTML += `<th>${p}</th>`;
+        total.innerHTML += `<th id="total-${p}">0</th>`;
+    });
+}
+
+function renderRoundInputs(){
+    if(round > maxRounds) return;
+    document.getElementById("roundInfo").innerText = `Runde ${round} / ${maxRounds}`;
+    const container = document.getElementById("roundInputs");
+    container.innerHTML = "";
+    players.forEach(p => {
+        container.innerHTML += `
+            <div class="playerRow">
+                <div class="playerName">${p}</div>
+                <input type="number" placeholder="Tipp" id="bid-${p}">
+                <input type="number" placeholder="Stiche" id="tricks-${p}">
+            </div>`;
+    });
+}
+
+function nextRound(){
+    players.forEach(p => {
+        const bid = parseInt(document.getElementById(`bid-${p}`).value);
+        const tricks = parseInt(document.getElementById(`tricks-${p}`).value);
+        if(isNaN(bid) || isNaN(tricks)) { alert("Bitte Werte eintragen!"); throw "error"; }
+        
+        let pts = (bid === tricks) ? (20 + tricks * 10) : (Math.abs(bid - tricks) * -10);
+        scores[p].push(pts);
+    });
+
+    round++;
+    saveGame();
+    rebuildUI();
+}
+
+function rebuildUI() {
+    // Header & Total neu
+    document.getElementById("tableHead").innerHTML = "<th>Rd</th>";
+    document.getElementById("totalRow").innerHTML = "<th>Σ</th>";
+    buildTableHeader();
+
+    // Body neu füllen
+    const body = document.getElementById("tableBody");
+    body.innerHTML = "";
+    
+    for(let r=0; r < scores[players[0]].length; r++) {
+        let row = `<tr><td>${r+1}</td>`;
+        players.forEach(p => {
+            let pnt = scores[p][r];
+            row += `<td>${pnt > 0 ? "+" : ""}${pnt}</td>`;
+        });
+        body.innerHTML += row + "</tr>";
+    }
+
+    players.forEach(p => {
+        const total = scores[p].reduce((a,b)=>a+b,0);
+        document.getElementById(`total-${p}`).innerText = total;
+    });
+
+    if(round > maxRounds) endGame(); else renderRoundInputs();
+}
+
+function endGame(){
+    document.getElementById("roundInfo").innerText = "Spiel beendet!";
+    document.getElementById("roundInputs").innerHTML = "";
+    let winner = players.reduce((a, b) => 
+        scores[a].reduce((s,v)=>s+v,0) > scores[b].reduce((s,v)=>s+v,0) ? a : b
+    );
+    document.getElementById("winnerBox").innerHTML = `<div class="winner">🏆 ${winner} gewinnt!</div>`;
+}
+</script>
+</body>
+</html>
